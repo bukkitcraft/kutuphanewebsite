@@ -1,0 +1,98 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Content {
+  id          Int       @id @default(autoincrement())
+  title       String
+  slug        String    @unique
+  coverImage  String?
+  bodyHtml    String
+  averageRate Float     @default(0)
+  voteCount   Int       @default(0)
+  createdAt   DateTime  @default(now())
+  comments    Comment[]
+}
+
+model Comment {
+  id             Int           @id @default(autoincrement())
+  contentId      Int?
+  announcementId Int?
+  fullName       String
+  message        String
+  gender         Gender
+  /** İçerik / duyuru yorumu için 1–5 puan; eski kayıtlar 0 olabilir */
+  rating         Int           @default(0)
+  isApproved     Boolean       @default(false)
+  isGuestbook    Boolean       @default(false)
+  createdAt      DateTime      @default(now())
+  content        Content?      @relation(fields: [contentId], references: [id], onDelete: Cascade)
+  announcement   Announcement? @relation(fields: [announcementId], references: [id], onDelete: Cascade)
+}
+
+model AdminUser {
+  id           Int      @id @default(autoincrement())
+  username     String   @unique
+  passwordHash String
+  createdAt    DateTime @default(now())
+}
+
+model Setting {
+  id        Int      @id @default(autoincrement())
+  key       String   @unique
+  value     String
+  updatedAt DateTime @updatedAt
+}
+
+model Announcement {
+  id        Int       @id @default(autoincrement())
+  title     String
+  bodyHtml  String
+  isActive  Boolean   @default(true)
+  sortOrder Int       @default(0)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  comments  Comment[]
+}
+
+model MenuItem {
+  id        Int      @id @default(autoincrement())
+  label     String
+  href      String
+  isActive  Boolean  @default(true)
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model HomeCarouselSlide {
+  id        Int      @id @default(autoincrement())
+  imageUrl  String
+  altText   String?
+  linkUrl   String?
+  isActive  Boolean  @default(true)
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+/** Blog / site geneli yorum + puan (anasayfa); admin onayi sonrasi listelenir */
+model SiteReview {
+  id         Int      @id @default(autoincrement())
+  fullName   String
+  message    String
+  gender     Gender
+  rating     Int
+  isApproved Boolean  @default(false)
+  createdAt  DateTime @default(now())
+}
+
+enum Gender {
+  MALE
+  FEMALE
+}
